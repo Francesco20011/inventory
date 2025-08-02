@@ -9,6 +9,30 @@ const giveBtn = document.getElementById('give-btn');
 const dropBtn = document.getElementById('drop-btn');
 const inventory = document.getElementById('inventory');
 
+const iconMap = {
+    arco: 'icons/arco.png',
+    cornice: 'icons/cornice.png',
+    lucchetto: 'icons/lucchetto.png',
+    manoaperta: 'icons/manoaperta.png',
+    mela: 'icons/mela.png',
+    monete: 'icons/monete.png',
+    money: 'icons/monete.png',
+    patata: 'icons/patata.png',
+    scudo: 'icons/scudo.png',
+    slotbloccato: 'icons/slotbloccato.png',
+    slotevidenziato: 'icons/slotevidenziato.png',
+    slotvuoto: 'icons/slotvuoto.png',
+    spada: 'icons/spada.png',
+    stella: 'icons/stella.png',
+    X: 'icons/X.png',
+    zaino: 'icons/zaino.png'
+};
+
+function getIcon(name) {
+    const key = name?.toLowerCase();
+    return iconMap[key] || iconMap.slotvuoto;
+}
+
 // Variables for custom drag system
 let currentSlot = null;
 let isInventoryOpen = false;
@@ -55,6 +79,7 @@ function createSlot(parent, type, slotIndex) {
         slot.addEventListener('dblclick', handleHotbarDoubleClick);
     }
     
+	slot.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
     parent.appendChild(slot);
     return slot;
 }
@@ -84,11 +109,13 @@ window.addEventListener('message', function(event) {
     if (data.action === 'toggle') {
         if (data.show) {
             inventory.classList.remove('hidden');
+			document.body.classList.add('inventory-open');
             isInventoryOpen = true;
             console.log('Inventario aperto');
         } else {
             inventory.classList.add('hidden');
             itemDetails.classList.add('hidden');
+			document.body.classList.remove('inventory-open');
             isInventoryOpen = false;
             console.log('Inventario chiuso');
         }
@@ -101,11 +128,14 @@ window.addEventListener('message', function(event) {
     }
 });
 
-function addItem(name, count) {
+function setItem(name, count) {	
     console.log(`Aggiungendo item: ${name} x${count}`);
-    const empty = Array.from(itemGrid.children).find((el) => !el.textContent || el.textContent.trim() === '');
+    const empty = Array.from(itemGrid.children).find((el) => !el.dataset.itemName);
     if (empty) {
-        empty.textContent = `${name} x${count}`;
+        empty.dataset.itemName = name;
+        empty.dataset.count = count;
+        empty.innerHTML = `<img src="${getIcon(name)}" class="slot-icon"><span class="item-count">${count}</span>`;
+        empty.style.backgroundImage = 'none';
         console.log(`Item aggiunto in slot: ${name} x${count}`);
     } else {
         console.log('Nessuno slot vuoto trovato nell\'inventario!');
@@ -116,16 +146,32 @@ function clearItems() {
     console.log('Pulendo tutti gli items');
     
     Array.from(itemGrid.children).forEach((el) => {
-        el.textContent = '';
+        el.dataset.itemName = '';
+        el.dataset.count = '';
+        el.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+        el.style.backgroundImage = '';
     });
     
     Array.from(dropGrid.children).forEach((el) => {
-        el.textContent = '';
+        el.dataset.itemName = '';
+        el.dataset.count = '';
+        el.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+        el.style.backgroundImage = '';
+        el.classList.remove('filled')
     });
     
     Array.from(hotbar.children).forEach((el) => {
         el.textContent = '';
     });
+	
+	function lockSlot(slot) {
+    slot.classList.add('locked');
+    slot.dataset.locked = 'true';
+}
+
+	function unlockSlot(slot) {
+    slot.classList.remove('locked');
+    slot.dataset.locked = '';
 }
 
 function highlightHotbar(slot) {
@@ -140,7 +186,7 @@ function highlightHotbar(slot) {
 // CUSTOM DRAG SYSTEM
 function handleMouseDown(e) {
     // Solo se c'è un item nello slot
-    if (!this.textContent || this.textContent.trim() === '') return;
+    if (!this.dataset.itemName) return;
     
     e.preventDefault();
     
@@ -149,7 +195,7 @@ function handleMouseDown(e) {
     mouseStartY = e.clientY;
     draggedSlot = this;
     
-    console.log('Mouse down su item:', this.textContent);
+    console.log('Mouse down su item:', this.dataset.itemName);
 }
 
 function handleMouseMove(e) {
@@ -169,7 +215,7 @@ function startDrag(e) {
     if (!draggedSlot) return;
     
     isDragging = true;
-    console.log('Iniziando drag di:', draggedSlot.textContent);
+    console.log('Iniziando drag di:', draggedSlot.dataset.itemName);
     
     // Crea elemento visuale per il drag
     dragElement = document.createElement('div');
@@ -187,15 +233,12 @@ function startDrag(e) {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'Uncial Antiqua', serif;
-        font-size: 0.8rem;
-        color: white;
         pointer-events: none;
         z-index: 10000;
-        text-shadow: 0 1px 3px black;
     `;
     
     document.body.appendChild(dragElement);
+	document.body.classList.add('dragging');
     
     // Evidenzia lo slot sorgente
     draggedSlot.classList.add('dragging-source');
@@ -258,7 +301,8 @@ function completeDrag(e) {
     }
     
     document.removeEventListener('mousemove', updateDragPosition);
-    
+    document.body.classList.remove('dragging');
+	
     // Rimuovi tutte le classi di evidenziazione
     document.querySelectorAll('.dragging-source, .drag-hover').forEach(el => {
         el.classList.remove('dragging-source', 'drag-hover');
@@ -284,36 +328,42 @@ function completeDrag(e) {
     // Esegui il movimento
     const sourceType = draggedSlot.dataset.type;
     const targetType = targetSlot.dataset.type;
-    const itemData = draggedSlot.textContent;
+    const itemData = draggedSlot.dataset.itemName;
     
     console.log(`Drop: ${sourceType} -> ${targetType} | Item: ${itemData}`);
     
-    moveItem(draggedSlot, targetSlot, sourceType, targetType, itemData);
+    moveItem(draggedSlot, targetSlot, sourceType, targetType);
 }
 
-function moveItem(sourceSlot, targetSlot, sourceType, targetType, itemData) {
-    if (!itemData || itemData.trim() === '') {
+function moveItem(sourceSlot, targetSlot, sourceType, targetType) {
+    if (!sourceSlot.dataset.itemName) {
         console.log('Nessun item da spostare');
         return;
     }
     
-    const parts = itemData.split(' x');
-    const itemName = parts[0]?.trim();
-    const itemCount = parseInt(parts[1]) || 1;
-    
-    if (!itemName) {
-        console.log('Nome item non valido');
-        return;
-    }
-    
-    // Se il target è occupato, fai lo swap
-    if (targetSlot.textContent && targetSlot.textContent.trim() !== '') {
+    const itemName = sourceSlot.dataset.itemName;
+    const itemCount = parseInt(sourceSlot.dataset.count) || 1;
+	
+    if (targetSlot.dataset.itemName) {
         console.log('Slot di destinazione occupato - facendo swap');
-        const targetData = targetSlot.textContent;
-        
-        // Swap degli items
-        targetSlot.textContent = sourceSlot.textContent;
-        sourceSlot.textContent = targetData;
+    
+		const targetName = targetSlot.dataset.itemName;
+        const targetCount = targetSlot.dataset.count;
+        const targetHTML = targetSlot.innerHTML;
+        const targetBg = targetSlot.style.backgroundImage;
+
+        targetSlot.dataset.itemName = itemName;
+        targetSlot.dataset.count = itemCount;
+        targetSlot.innerHTML = sourceSlot.innerHTML;
+        targetSlot.style.backgroundImage = 'none';
+
+        sourceSlot.dataset.itemName = targetName;
+        sourceSlot.dataset.count = targetCount;
+        sourceSlot.innerHTML = targetHTML;
+        sourceSlot.style.backgroundImage = targetBg;
+
+        if (targetType === 'hotbar') targetSlot.classList.add('filled');
+        if (sourceType === 'hotbar' && !sourceSlot.dataset.itemName) sourceSlot.classList.remove('filled');
         
         console.log('Swap completato');
         return;
@@ -322,9 +372,17 @@ function moveItem(sourceSlot, targetSlot, sourceType, targetType, itemData) {
     // Movimento normale
     console.log(`Spostando ${itemName} da ${sourceType} a ${targetType}`);
     
-    // Sposta l'item
-    targetSlot.textContent = sourceSlot.textContent;
-    sourceSlot.textContent = '';
+    targetSlot.dataset.itemName = itemName;
+    targetSlot.dataset.count = itemCount;
+    targetSlot.innerHTML = sourceSlot.innerHTML;
+    targetSlot.style.backgroundImage = 'none';
+    if (targetType === 'hotbar') targetSlot.classList.add('filled');
+
+    sourceSlot.dataset.itemName = '';
+    sourceSlot.dataset.count = '';
+    sourceSlot.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+    sourceSlot.style.backgroundImage = '';
+    if (sourceType === 'hotbar') sourceSlot.classList.remove('filled');
     
     // Invia al server in base al tipo di movimento
     handleServerMovement(sourceType, targetType, itemName, itemCount, sourceSlot, targetSlot);
@@ -411,22 +469,24 @@ function sendCallback(action, data) {
 
 // Doppio click su hotbar per rimuovere item
 function handleHotbarDoubleClick() {
-    if (!this.textContent || this.textContent.trim() === '') return;
+    if (!this.dataset.itemName) return;
     
     console.log('Doppio click su hotbar slot');
     
-    const parts = this.textContent.split(' x');
-    const itemName = parts[0]?.trim();
-    const itemCount = parseInt(parts[1]) || 1;
-    
-    if (!itemName) return;
-    
     // Trova uno slot vuoto nell'inventario
-    const emptySlot = Array.from(itemGrid.children).find(slot => !slot.textContent || slot.textContent.trim() === '');
+    const emptySlot = Array.from(itemGrid.children).find(slot => !slot.dataset.itemName);
     
     if (emptySlot) {
-        emptySlot.textContent = this.textContent;
-        this.textContent = '';
+        emptySlot.dataset.itemName = itemName;
+        emptySlot.dataset.count = itemCount;
+        emptySlot.innerHTML = this.innerHTML;
+        emptySlot.style.backgroundImage = 'none';
+
+        this.dataset.itemName = '';
+        this.dataset.count = '';
+        this.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+        this.style.backgroundImage = '';
+        this.classList.remove('filled');
         
         sendCallback('removeFromHotbar', {
             item: itemName,
@@ -442,35 +502,36 @@ function handleHotbarDoubleClick() {
 
 // Show item details when clicking a slot
 function handleSlotClick(e) {
-    if (!this.textContent || !isInventoryOpen) return;
-    
-    console.log('Click su slot - aprendo dettagli:', this.textContent);
+    if (!this.dataset.itemName || !isInventoryOpen) return;
+
+    console.log('Click su slot - aprendo dettagli:', this.dataset.itemName);
     
     currentSlot = this;
-    const parts = this.textContent.split(' x');
-    itemNameEl.textContent = parts[0] || this.textContent;
+    itemNameEl.textContent = this.dataset.itemName;
     itemDescEl.textContent = 'Descrizione: Questo è un item di esempio';
     itemDetails.classList.remove('hidden');
 }
 
 // Button actions nel dettaglio
 useBtn.addEventListener('click', () => {
-    if (currentSlot && currentSlot.textContent) {
-        const parts = currentSlot.textContent.split(' x');
-        const itemName = parts[0];
+    if (currentSlot && currentSlot.dataset.itemName) {
+        const itemName = currentSlot.dataset.itemName;
         
         sendCallback('useItem', { name: itemName });
         
-        currentSlot.textContent = '';
+        currentSlot.dataset.itemName = '';
+        currentSlot.dataset.count = '';
+        currentSlot.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+        currentSlot.style.backgroundImage = '';
+        currentSlot.classList.remove('filled');
     }
     itemDetails.classList.add('hidden');
 });
 
 giveBtn.addEventListener('click', () => {
-    if (currentSlot && currentSlot.textContent) {
-        const parts = currentSlot.textContent.split(' x');
-        const itemName = parts[0];
-        const count = parseInt(parts[1]) || 1;
+    if (currentSlot && currentSlot.dataset.itemName) {
+        const itemName = currentSlot.dataset.itemName;
+        const count = parseInt(currentSlot.dataset.count) || 1;
         
         const targetId = prompt('ID del giocatore a cui dare l\'item:');
         
@@ -481,24 +542,31 @@ giveBtn.addEventListener('click', () => {
                 targetId: parseInt(targetId)
             });
             
-            currentSlot.textContent = '';
+            currentSlot.dataset.itemName = '';
+            currentSlot.dataset.count = '';
+            currentSlot.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+            currentSlot.style.backgroundImage = '';
+            currentSlot.classList.remove('filled');
         }
     }
     itemDetails.classList.add('hidden');
 });
 
 dropBtn.addEventListener('click', () => {
-    if (currentSlot && currentSlot.textContent) {
-        const parts = currentSlot.textContent.split(' x');
-        const itemName = parts[0];
-        const count = parseInt(parts[1]) || 1;
+    if (currentSlot && currentSlot.dataset.itemName) {
+        const itemName = currentSlot.dataset.itemName;
+        const count = parseInt(currentSlot.dataset.count) || 1;
         
         sendCallback('dropItem', {
             name: itemName,
             count: count
         });
         
-        currentSlot.textContent = '';
+        currentSlot.dataset.itemName = '';
+        currentSlot.dataset.count = '';
+        currentSlot.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+        currentSlot.style.backgroundImage = '';
+        currentSlot.classList.remove('filled');
     }
     itemDetails.classList.add('hidden');
 });

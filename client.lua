@@ -1,6 +1,7 @@
 local display = false
 local items = {}
 local wasInventoryOpen = false
+local droppedItems = {}
 
 -- Funzione per aprire/chiudere l'inventario
 local function toggleInventory()
@@ -23,16 +24,6 @@ local function toggleInventory()
             action = 'toggle',
             show = true
         })
-        
-        -- Pulisci e ricarica gli items
-        SendNUIMessage({ action = 'clear' })
-        for name, count in pairs(items) do
-            SendNUIMessage({
-                action = 'addItem',
-                name = name,
-                count = count
-            })
-        end
         
         print("Inventario aperto") -- Debug
     else
@@ -93,14 +84,12 @@ RegisterNetEvent('minimal_inventory:addItem', function(name, count)
     
     items[name] = (items[name] or 0) + count
     
-    -- Se l'inventario è aperto, aggiorna la UI
-    if display then
-        SendNUIMessage({
-            action = 'addItem',
-            name = name,
-            count = items[name]
-        })
-    end
+    -- Aggiorna la UI
+    SendNUIMessage({
+        action = 'setItem',
+        name = name,
+        count = items[name]
+    })
     
     -- Notifica al giocatore
     print(('Ricevuto: %s x%d'):format(name, count))
@@ -117,17 +106,12 @@ RegisterNetEvent('minimal_inventory:removeItem', function(name, count)
             items[name] = nil
         end
         
-        -- Aggiorna la UI se l'inventario è aperto
-        if display then
-            SendNUIMessage({ action = 'clear' })
-            for itemName, itemCount in pairs(items) do
-                SendNUIMessage({
-                    action = 'addItem',
-                    name = itemName,
-                    count = itemCount
-                })
-            end
-        end
+        -- Aggiorna la UI
+        SendNUIMessage({
+            action = 'setItem',
+            name = name,
+            count = items[name] or 0
+        })
     end
 end)
 
@@ -159,6 +143,14 @@ CreateThread(function()
         end
         
         Wait(0)
+    end
+end)
+
+-- Disattiva la weapon wheel nativa
+CreateThread(function()
+    while true do
+        Wait(0)
+        DisableControlAction(0, 37, true)
     end
 end)
 
@@ -235,9 +227,50 @@ RegisterNUICallback('dropItem', function(data, cb)
     cb('ok')
 end)
 
+-- Gestione oggetti droppati a terra
+RegisterNetEvent('minimal_inventory:spawnDroppedItem', function(id, itemName, count, coords)
+    local model = `prop_cs_package_01`
+    RequestModel(model)
+    while not HasModelLoaded(model) do
+        Wait(0)
+    end
+
+    local obj = CreateObject(model, coords.x, coords.y, coords.z - 1.0, true, true, true)
+    PlaceObjectOnGroundProperly(obj)
+    droppedItems[id] = { object = obj, item = itemName, count = count }
+end)
+
+RegisterNetEvent('minimal_inventory:removeDroppedItem', function(id)
+    local drop = droppedItems[id]
+    if drop then
+        DeleteObject(drop.object)
+        droppedItems[id] = nil
+    end
+end)
+
+-- Controlla la vicinanza ai props per permettere il pickup
+CreateThread(function()
+    while true do
+        local ped = PlayerPedId()
+        local coords = GetEntityCoords(ped)
+        for id, data in pairs(droppedItems) do
+            local objCoords = GetEntityCoords(data.object)
+            if #(coords - objCoords) <= 1.5 then
+                BeginTextCommandDisplayHelp("STRING")
+                AddTextComponentSubstringPlayerName("Premi ~INPUT_CONTEXT~ per raccogliere")
+                EndTextCommandDisplayHelp(0, false, true, -1)
+                if IsControlJustPressed(0, 38) then -- E
+                    TriggerServerEvent('minimal_inventory:pickupDroppedItem', id)
+                end
+            end
+        end
+        Wait(0)
+    end
+end)
+
 -- Spawna un prop quando un item viene droppato a terra
 RegisterNetEvent('minimal_inventory:spawnDroppedItem', function(itemName, count, coords)
-    local model = `prop_cs_package_01`
+    local model = GetHashKey('prop_cs_package_01')
     RequestModel(model)
     while not HasModelLoaded(model) do
         Wait(0)
