@@ -1,0 +1,286 @@
+body {
+  background: transparent !important;
+  font-family: 'Uncial Antiqua', serif !important;
+  margin: 0;
+  overflow: hidden;
+  user-select: none; /* Previene selezione testo durante drag */
+}
+
+#inventory {
+  position: fixed;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 920px;
+  height: 670px;
+  pointer-events: none;
+  background: none;
+  /* Assicurati che parta nascosto */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Quando NON è nascosto */
+#inventory:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Classe hidden per nascondere completamente */
+.hidden {
+  display: none !important;
+}
+
+.inventory-container {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+}
+
+.inventory-title {
+  font-family: 'Uncial Antiqua', serif;
+  font-size: 3.2rem;
+  letter-spacing: 0.08em;
+  color: #d8b85f;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 10px #000, 0 0px 2px #d8b85f77;
+  font-weight: normal;
+}
+
+.inv-flex {
+  display: flex;
+  gap: 56px;
+  margin-bottom: 40px;
+}
+
+.inventory-grid, .inventory-drop {
+  display: grid;
+  grid-template-columns: repeat(5, 90px);
+  grid-template-rows: repeat(5, 90px);
+  gap: 14px;
+  background: none;
+  border: none;
+}
+
+.inventory-grid .slot,
+.inventory-drop .slot {
+  width: 90px;
+  height: 90px;
+  background: rgba(22,19,15, 0.04);
+  border: 2.5px solid #d8b85f;
+  border-radius: 18px;
+  font-family: 'Uncial Antiqua', serif;
+  font-size: 1.5rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* Slot vuoti */
+.inventory-grid .slot:empty, .inventory-drop .slot:empty {
+  background: rgba(22,19,15, 0.08);
+}
+
+/* Slot attivi */
+.inventory-grid .slot.active {
+  outline: 2.5px solid #d8b85f;
+  box-shadow: 0 0 14px #d8b85faa;
+}
+
+/* Stili per il nuovo drag system */
+.slot.dragging-source {
+  opacity: 0.5;
+  transform: scale(0.95);
+  border-color: #fff;
+  box-shadow: 0 0 15px #d8b85f;
+}
+
+.slot.drag-hover,
+.hotbar-slot.drag-hover {
+  background: rgba(216, 184, 95, 0.3) !important;
+  border-color: #fff !important;
+  box-shadow: 0 0 10px #d8b85f !important;
+  transform: scale(1.05);
+}
+
+/* Stili specifici per le diverse aree */
+.inventory-slot {
+  border-color: #d8b85f;
+}
+
+.drop-slot {
+  border-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.drop-slot:empty {
+  background: rgba(255, 107, 107, 0.05);
+}
+
+.drop-slot.drag-hover {
+  background: rgba(255, 107, 107, 0.4) !important;
+  border-color: #ff4757 !important;
+}
+
+.inventory-drop {
+  border: 2.5px dashed #d8b85f;
+  border-radius: 14px;
+  padding: 10px;
+  min-width: 490px;
+  min-height: 490px;
+}
+
+.hotbar-grid {
+  margin-top: 10px;
+  display: flex;
+  gap: 23px;
+  justify-content: center;
+}
+
+.hotbar-slot {
+  width: 68px;
+  height: 68px;
+  background: rgba(20, 18, 10, 0.11);
+  border: 2.5px solid #d8b85f;
+  border-radius: 13px;
+  font-family: 'Uncial Antiqua', serif;
+  font-size: 1.17rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  user-select: none;
+  cursor: pointer;
+}
+
+.hotbar-slot.active {
+  outline: 2px solid #fff;
+  box-shadow: 0 0 10px #fff;
+}
+
+.hotbar-slot.dragging-source {
+  opacity: 0.5;
+  transform: scale(0.95);
+  border-color: #fff;
+  box-shadow: 0 0 15px #d8b85f;
+}
+
+.hotbar-labels {
+  display: flex;
+  justify-content: center;
+  gap: 46px;
+  font-size: 1.55rem;
+  color: #d8b85f;
+  font-family: 'Uncial Antiqua', serif;
+  margin-top: 8px;
+  text-shadow: 0 1px 7px #000;
+  letter-spacing: 0.23em;
+  width: 100%;
+}
+
+.hotbar-labels span {
+  width: 68px;
+  text-align: center;
+}
+
+#item-details {
+  position: fixed;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  background: none;
+  /* Anche i dettagli partono nascosti */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+#item-details:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+}
+
+.details-box {
+  min-width: 280px;
+  background: rgba(26, 15, 6, 0.98);
+  border: 2.5px solid #d8b85f;
+  border-radius: 16px;
+  padding: 22px 26px 16px 26px;
+  text-align: center;
+  box-shadow: 0 2px 38px #000a;
+  font-family: 'Uncial Antiqua', serif;
+  color: #fff;
+}
+
+.details-title {
+  font-size: 1.6rem;
+  color: #d8b85f;
+  margin-bottom: 7px;
+}
+
+.details-desc {
+  font-size: 1.08rem;
+  color: #fff;
+  margin-bottom: 17px;
+}
+
+.details-actions button {
+  background: #d8b85f;
+  color: #18100d;
+  font-family: 'Uncial Antiqua', serif;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  margin: 0 7px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.details-actions button:hover {
+  background: #fff8dc;
+}
+
+/* Stile per l'elemento di preview durante il drag */
+.drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  background: rgba(216, 184, 95, 0.9);
+  border: 2px solid #d8b85f;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Uncial Antiqua', serif;
+  color: white;
+  text-shadow: 0 1px 3px black;
+  transform: rotate(5deg);
+  animation: dragPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes dragPulse {
+  from {
+    transform: rotate(5deg) scale(1);
+    box-shadow: 0 0 10px #d8b85f;
+  }
+  to {
+    transform: rotate(-2deg) scale(1.05);
+    box-shadow: 0 0 20px #d8b85f;
+  }
+}

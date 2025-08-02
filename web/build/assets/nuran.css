@@ -1,0 +1,16 @@
+body {
+    background: radial-gradient(circle at center, #2e114b 0%, #000 100%);
+    font-family: 'Cinzel', serif;
+    color: #f0e6d2;
+}
+
+.inventory {
+    background: rgba(20, 20, 20, 0.85);
+    border: 2px solid #9465b0;
+    border-radius: 8px;
+}
+
+.inventory .slot {
+    background: rgba(10, 10, 10, 0.6);
+    border: 1px solid #9465b0;
+}
