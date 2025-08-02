@@ -79,7 +79,7 @@ function createSlot(parent, type, slotIndex) {
         slot.addEventListener('dblclick', handleHotbarDoubleClick);
     }
     
-	slot.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
+    slot.innerHTML = `<img src="${iconMap.slotvuoto}" class="slot-icon">`;
     parent.appendChild(slot);
     return slot;
 }
@@ -109,18 +109,18 @@ window.addEventListener('message', function(event) {
     if (data.action === 'toggle') {
         if (data.show) {
             inventory.classList.remove('hidden');
-			document.body.classList.add('inventory-open');
+            document.body.classList.add('inventory-open');
             isInventoryOpen = true;
             console.log('Inventario aperto');
         } else {
             inventory.classList.add('hidden');
             itemDetails.classList.add('hidden');
-			document.body.classList.remove('inventory-open');
+            document.body.classList.remove('inventory-open');
             isInventoryOpen = false;
             console.log('Inventario chiuso');
         }
     } else if (data.action === 'addItem') {
-        addItem(data.name, data.count);
+        setItem(data.name, data.count);
     } else if (data.action === 'clear') {
         clearItems();
     } else if (data.action === 'useSlot') {
@@ -128,7 +128,7 @@ window.addEventListener('message', function(event) {
     }
 });
 
-function setItem(name, count) {	
+function setItem(name, count) {    
     console.log(`Aggiungendo item: ${name} x${count}`);
     const empty = Array.from(itemGrid.children).find((el) => !el.dataset.itemName);
     if (empty) {
@@ -163,15 +163,11 @@ function clearItems() {
     Array.from(hotbar.children).forEach((el) => {
         el.textContent = '';
     });
-	
-	function lockSlot(slot) {
-    slot.classList.add('locked');
-    slot.dataset.locked = 'true';
 }
 
-	function unlockSlot(slot) {
-    slot.classList.remove('locked');
-    slot.dataset.locked = '';
+function lockSlot(slot) {
+    slot.classList.add('locked');
+    slot.dataset.locked = 'true';
 }
 
 function highlightHotbar(slot) {
@@ -238,7 +234,7 @@ function startDrag(e) {
     `;
     
     document.body.appendChild(dragElement);
-	document.body.classList.add('dragging');
+    document.body.classList.add('dragging');
     
     // Evidenzia lo slot sorgente
     draggedSlot.classList.add('dragging-source');
@@ -302,7 +298,7 @@ function completeDrag(e) {
     
     document.removeEventListener('mousemove', updateDragPosition);
     document.body.classList.remove('dragging');
-	
+    
     // Rimuovi tutte le classi di evidenziazione
     document.querySelectorAll('.dragging-source, .drag-hover').forEach(el => {
         el.classList.remove('dragging-source', 'drag-hover');
@@ -343,11 +339,11 @@ function moveItem(sourceSlot, targetSlot, sourceType, targetType) {
     
     const itemName = sourceSlot.dataset.itemName;
     const itemCount = parseInt(sourceSlot.dataset.count) || 1;
-	
+    
     if (targetSlot.dataset.itemName) {
         console.log('Slot di destinazione occupato - facendo swap');
     
-		const targetName = targetSlot.dataset.itemName;
+        const targetName = targetSlot.dataset.itemName;
         const targetCount = targetSlot.dataset.count;
         const targetHTML = targetSlot.innerHTML;
         const targetBg = targetSlot.style.backgroundImage;
@@ -470,12 +466,11 @@ function sendCallback(action, data) {
 // Doppio click su hotbar per rimuovere item
 function handleHotbarDoubleClick() {
     if (!this.dataset.itemName) return;
-    
+    const itemName = this.dataset.itemName;
+    const itemCount = this.dataset.count || 1;
     console.log('Doppio click su hotbar slot');
-    
     // Trova uno slot vuoto nell'inventario
     const emptySlot = Array.from(itemGrid.children).find(slot => !slot.dataset.itemName);
-    
     if (emptySlot) {
         emptySlot.dataset.itemName = itemName;
         emptySlot.dataset.count = itemCount;
@@ -584,8 +579,6 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && isInventoryOpen) {
         e.preventDefault();
         e.stopPropagation();
-        
-
         if (!itemDetails.classList.contains('hidden')) {
             itemDetails.classList.add('hidden');
             console.log('Dettagli item chiusi con ESC');
@@ -599,18 +592,14 @@ document.addEventListener('keydown', function(e) {
 // Chiudi cliccando fuori dall'inventario
 document.addEventListener('click', function(e) {
     if (!isInventoryOpen) return;
-    
     const inventoryContainer = document.querySelector('.inventory-container');
     const itemDetailsBox = document.querySelector('#item-details');
-    
     const slot = e.target.closest('.slot, .hotbar-slot');
-
     if (!itemDetails.classList.contains('hidden') && !itemDetailsBox.contains(e.target) && !slot) {
         itemDetails.classList.add('hidden');
         console.log('Dettagli item chiusi con click fuori');
         return;
     }
-    
     if (!inventoryContainer.contains(e.target) && !itemDetailsBox.contains(e.target)) {
         console.log('Chiudendo inventario con click fuori');
         closeInventory();

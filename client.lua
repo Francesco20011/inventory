@@ -61,7 +61,7 @@ RegisterCommand('toggleInventory', function()
 end, false)
 
 -- Mappa il tasto F2 per aprire l'inventario
-RegisterKeyMapping('toggleInventory', 'Apri/Chiudi Inventario', 'keyboard', 'F2')
+RegisterKeyMapping('toggleInventory', 'Apri/Chiudi Inventario', 'keyboard', 'f2')
 
 -- Hotbar (tasti 1-7)
 for i = 1, 7 do
