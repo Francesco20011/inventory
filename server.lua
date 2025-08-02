@@ -130,10 +130,12 @@ RegisterNetEvent('minimal_inventory:dropItem', function(itemName, count)
         
         -- Aggiorna il client
         TriggerClientEvent('minimal_inventory:removeItem', source, itemName, count)
-        
-        -- Qui potresti creare l'item nel mondo di gioco
-        -- createWorldItem(source, itemName, count)
-        
+
+        -- Crea un prop nel mondo di gioco alla posizione del giocatore
+        local ped = GetPlayerPed(source)
+        local coords = GetEntityCoords(ped)
+        TriggerClientEvent('minimal_inventory:spawnDroppedItem', -1, itemName, count, { x = coords.x, y = coords.y, z = coords.z })
+
         TriggerClientEvent('chat:addMessage', source, {
             color = {255, 165, 0},
             multiline = false,
@@ -146,6 +148,22 @@ RegisterNetEvent('minimal_inventory:dropItem', function(itemName, count)
             args = {"Errore", "Non hai abbastanza di questo item!"}
         })
     end
+end)
+
+-- Event per raccogliere un item dal terreno
+RegisterNetEvent('minimal_inventory:pickupFromGround', function(itemName, count)
+    local source = source
+    local inventory = getPlayerInventory(source)
+
+    inventory[itemName] = (inventory[itemName] or 0) + count
+    savePlayerInventory(source, inventory)
+
+    TriggerClientEvent('minimal_inventory:addItem', source, itemName, count)
+    TriggerClientEvent('chat:addMessage', source, {
+        color = {0, 255, 0},
+        multiline = false,
+        args = {"Sistema", ("Hai raccolto: %s x%d"):format(itemName, count)}
+    })
 end)
 
 -- Event per dare un item ad un altro giocatore

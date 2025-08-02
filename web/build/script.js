@@ -19,6 +19,8 @@ let mouseStartX = 0;
 let mouseStartY = 0;
 let dragThreshold = 5; // pixel threshold to start dragging
 
+const resourceName = typeof GetParentResourceName === 'function' ? GetParentResourceName() : 'minimal_inventory';
+
 // Inizializza l'inventario come chiuso
 document.addEventListener('DOMContentLoaded', function() {
     inventory.classList.add('hidden');
@@ -344,8 +346,8 @@ function handleServerMovement(sourceType, targetType, itemName, itemCount, sourc
     // INVENTORY → DROP (buttare a terra)
     else if (sourceType === 'inventory' && targetType === 'drop') {
         console.log('Server: Inventario -> Terra');
-        sendCallback('dropItemToGround', {
-            item: itemName,
+        sendCallback('dropItem', {
+            name: itemName,
             count: itemCount
         });
     }
@@ -394,7 +396,6 @@ function handleServerMovement(sourceType, targetType, itemName, itemCount, sourc
 
 // Funzione helper per inviare callback
 function sendCallback(action, data) {
-    const resourceName = GetParentResourceName();
     console.log(`Inviando callback: ${action}`, data);
     
     fetch(`https://${resourceName}/${action}`, {
@@ -516,12 +517,13 @@ document.addEventListener('keydown', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
+
         if (!itemDetails.classList.contains('hidden')) {
             itemDetails.classList.add('hidden');
             console.log('Dettagli item chiusi con ESC');
         } else {
             console.log('Chiudendo inventario con ESC');
-            sendCallback('closeInventory', {});
+            closeInventory();
         }
     }
 });
@@ -533,7 +535,9 @@ document.addEventListener('click', function(e) {
     const inventoryContainer = document.querySelector('.inventory-container');
     const itemDetailsBox = document.querySelector('#item-details');
     
-    if (!itemDetails.classList.contains('hidden') && !itemDetailsBox.contains(e.target)) {
+    const slot = e.target.closest('.slot, .hotbar-slot');
+
+    if (!itemDetails.classList.contains('hidden') && !itemDetailsBox.contains(e.target) && !slot) {
         itemDetails.classList.add('hidden');
         console.log('Dettagli item chiusi con click fuori');
         return;
@@ -541,11 +545,14 @@ document.addEventListener('click', function(e) {
     
     if (!inventoryContainer.contains(e.target) && !itemDetailsBox.contains(e.target)) {
         console.log('Chiudendo inventario con click fuori');
-        sendCallback('closeInventory', {});
+        closeInventory();
     }
 });
 
-// Funzione helper per ottenere il nome della risorsa
-function GetParentResourceName() {
-    return 'minimal_inventory';
+// Chiude immediatamente l'inventario lato NUI e notifica il server
+function closeInventory() {
+    inventory.classList.add('hidden');
+    itemDetails.classList.add('hidden');
+    isInventoryOpen = false;
+    sendCallback('closeInventory', {});
 }

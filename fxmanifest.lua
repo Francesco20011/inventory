@@ -25,5 +25,7 @@ files {
     'web/build/index.html',
     'web/build/style.css',
     'web/build/script.js',
-    'web/build/assets/nuran.css'
+    'web/build/assets/nuran.css',
+    'web/images/*.png',
+    'data/*.lua'
 }

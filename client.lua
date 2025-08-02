@@ -179,15 +179,6 @@ RegisterNUICallback('moveToHotbar', function(data, cb)
     cb('ok')
 end)
 
--- Callback NUI per buttare item a terra
-RegisterNUICallback('dropItemToGround', function(data, cb)
-    if data.item and data.count then
-        TriggerServerEvent('minimal_inventory:dropItemToGround', data.item, data.count)
-        print(('Buttato a terra: %s x%d'):format(data.item, data.count))
-    end
-    cb('ok')
-end)
-
 -- Callback NUI per raccogliere da terra
 RegisterNUICallback('pickupFromGround', function(data, cb)
     if data.item and data.count then
@@ -242,6 +233,18 @@ RegisterNUICallback('dropItem', function(data, cb)
         TriggerServerEvent('minimal_inventory:dropItem', data.name, data.count)
     end
     cb('ok')
+end)
+
+-- Spawna un prop quando un item viene droppato a terra
+RegisterNetEvent('minimal_inventory:spawnDroppedItem', function(itemName, count, coords)
+    local model = `prop_cs_package_01`
+    RequestModel(model)
+    while not HasModelLoaded(model) do
+        Wait(0)
+    end
+
+    local obj = CreateObject(model, coords.x, coords.y, coords.z - 1.0, true, true, true)
+    PlaceObjectOnGroundProperly(obj)
 end)
 
 -- Callback NUI per dare un item
