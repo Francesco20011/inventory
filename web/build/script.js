@@ -9,28 +9,37 @@ const giveBtn = document.getElementById('give-btn');
 const dropBtn = document.getElementById('drop-btn');
 const inventory = document.getElementById('inventory');
 
+const ICON_BASE = '../icons/';
+const IMAGE_BASE = '../images/';
 const iconMap = {
-    arco: 'icons/arco.png',
-    cornice: 'icons/cornice.png',
-    lucchetto: 'icons/lucchetto.png',
-    manoaperta: 'icons/manoaperta.png',
-    mela: 'icons/mela.png',
-    monete: 'icons/monete.png',
-    money: 'icons/monete.png',
-    patata: 'icons/patata.png',
-    scudo: 'icons/scudo.png',
-    slotbloccato: 'icons/slotbloccato.png',
-    slotevidenziato: 'icons/slotevidenziato.png',
-    slotvuoto: 'icons/slotvuoto.png',
-    spada: 'icons/spada.png',
-    stella: 'icons/stella.png',
-    X: 'icons/X.png',
-    zaino: 'icons/zaino.png'
+    arco: `${ICON_BASE}arco.png`,
+    cornice: `${ICON_BASE}cornice.png`,
+    lucchetto: `${ICON_BASE}lucchetto.png`,
+    manoaperta: `${ICON_BASE}manoaperta.png`,
+    mela: `${ICON_BASE}mela.png`,
+    monete: `${ICON_BASE}monete.png`,
+    money: `${ICON_BASE}monete.png`,
+    patata: `${ICON_BASE}patata.png`,
+    scudo: `${ICON_BASE}scudo.png`,
+    slotbloccato: `${ICON_BASE}slotbloccato.png`,
+    slotevidenziato: `${ICON_BASE}slotevidenziato.png`,
+    slotvuoto: `${ICON_BASE}slotvuoto.png`,
+    spada: `${ICON_BASE}spada.png`,
+    stella: `${ICON_BASE}stella.png`,
+    X: `${ICON_BASE}X.png`,
+    zaino: `${ICON_BASE}zaino.png`
 };
 
 function getIcon(name) {
     const key = name?.toLowerCase();
-    return iconMap[key] || iconMap.slotvuoto;
+     if (iconMap[key]) return iconMap[key];
+
+    // fallback dinamico alle immagini degli item
+    if (name) {
+        return `${IMAGE_BASE}${name.toUpperCase()}.png`;
+    }
+
+    return iconMap.slotvuoto;
 }
 
 // Variables for custom drag system
@@ -128,13 +137,14 @@ window.addEventListener('message', function(event) {
     }
 });
 
-function setItem(name, count) {    
+function setItem(name, count) {
     console.log(`Aggiungendo item: ${name} x${count}`);
     const empty = Array.from(itemGrid.children).find((el) => !el.dataset.itemName);
     if (empty) {
         empty.dataset.itemName = name;
         empty.dataset.count = count;
-        empty.innerHTML = `<img src="${getIcon(name)}" class="slot-icon"><span class="item-count">${count}</span>`;
+        const iconPath = getIcon(name);
+        empty.innerHTML = `<img src="${iconPath}" class="slot-icon" onerror="this.onerror=null;this.src='${iconMap.slotvuoto}'"><span class="item-count">${count}</span>`;
         empty.style.backgroundImage = 'none';
         console.log(`Item aggiunto in slot: ${name} x${count}`);
     } else {

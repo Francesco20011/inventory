@@ -7,10 +7,9 @@ description 'Simple F2 inventory built from scratch'
 
 shared_script '@ox_lib/init.lua'
 dependencies {
-    'ox_lib',
+    'ox_lib'
 }
 
--- Serve the NUI from the compiled build directory.
 ui_page 'web/build/index.html'
 
 client_scripts {
@@ -27,5 +26,6 @@ files {
     'web/build/script.js',
     'web/build/assets/nuran.css',
     'web/images/*.png',
+    'web/icons/*.png',
     'data/*.lua'
 }

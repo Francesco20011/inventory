@@ -83,9 +83,8 @@ body {
 .inventory-drop .slot {
   width: 90px;
   height: 90px;
-  background: rgba(22,19,15, 0.04);
-  border: 2.5px solid #d8b85f;
-  border-radius: 18px;
+  background: url('icons/slotvuoto.png') no-repeat center/contain;
+  border: none;
   font-family: 'Uncial Antiqua', serif;
   font-size: 1.5rem;
   color: #fff;
@@ -99,9 +98,12 @@ body {
 }
 
 /* Slot attivi */
-.inventory-grid .slot.active {
-  outline: 2.5px solid #d8b85f;
-  box-shadow: 0 0 14px #d8b85faa;
+.inventory-grid .slot.active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('icons/slotevidenziato.png') no-repeat center/contain;
+  pointer-events: none;
 }
 
 /* Stili per il nuovo drag system */
@@ -109,34 +111,35 @@ body {
   opacity: 0.5;
   transform: scale(0.95);
   border-color: #fff;
-  box-shadow: 0 0 15px #d8b85f;
 }
 
-.slot.drag-hover,
-.hotbar-slot.drag-hover {
-  background: rgba(216, 184, 95, 0.3) !important;
-  border-color: #fff !important;
-  box-shadow: 0 0 10px #d8b85f !important;
-  transform: scale(1.05);
+.slot.drag-hover::before,
+.hotbar-slot.drag-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('icons/slotevidenziato.png') no-repeat center/contain;
+  pointer-events: none;
 }
 
 /* Stili specifici per le diverse aree */
-.inventory-slot {
-  border-color: #d8b85f;
-}
+.inventory-slot {}
 
 .drop-slot {
-  border-color: #ff6b6b;
-  background: rgba(255, 107, 107, 0.1);
+  background: url('icons/slotvuoto.png') no-repeat center/contain;
 }
 
 .drop-slot:empty {
-  background: rgba(255, 107, 107, 0.05);
+  background: url('icons/slotvuoto.png') no-repeat center/contain;
 }
 
 .drop-slot.drag-hover {
-  background: rgba(255, 107, 107, 0.4) !important;
-  border-color: #ff4757 !important;
+  .drop-slot.drag-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('icons/slotevidenziato.png') no-repeat center/contain;
+  pointer-events: none;
 }
 
 .inventory-drop {
@@ -157,8 +160,8 @@ body {
 .hotbar-slot {
   width: 68px;
   height: 68px;
-  background: rgba(20, 18, 10, 0.11);
-  border: 2.5px solid #d8b85f;
+  background: url('icons/slotvuoto.png') no-repeat center/contain;
+  border: none;
   border-radius: 13px;
   font-family: 'Uncial Antiqua', serif;
   font-size: 1.17rem;
@@ -173,15 +176,17 @@ body {
 }
 
 .hotbar-slot.active {
-  outline: 2px solid #fff;
-  box-shadow: 0 0 10px #fff;
+  .hotbar-slot.active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('icons/slotevidenziato.png') no-repeat center/contain;
+  pointer-events: none;
 }
 
 .hotbar-slot.dragging-source {
   opacity: 0.5;
   transform: scale(0.95);
-  border-color: #fff;
-  box-shadow: 0 0 15px #d8b85f;
 }
 
 .hotbar-labels {
@@ -294,7 +299,7 @@ body {
   }
 }
 
-.slot-icon {
+.item-icon {
   width: 70%;
   height: 70%;
   object-fit: contain;
@@ -319,16 +324,8 @@ body {
   background: url('icons/stella.png') no-repeat center/contain;
 }
 
-.hotbar-slot.active::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url('icons/slotevidenziato.png') no-repeat center/cover;
-  pointer-events: none;
-}
-
 .slot.locked {
-  background-image: url('icons/slotbloccato.png');
+  background: url('icons/slotbloccato.png') no-repeat center/contain;
 }
 
 .slot.locked::after {

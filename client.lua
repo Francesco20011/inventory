@@ -1,4 +1,4 @@
- "upflocal display = false
+local display = false
 local items = {}
 local wasInventoryOpen = false
 local droppedItems = {}
