@@ -79,7 +79,7 @@ for i = 1, 7 do
 end
 
 -- Event per aggiungere items
-RegisterNetEvent('minimal_inventory:addItem', function(name, count)
+RegisterNetEvent('inventory:addItem', function(name, count)
     if not name or not count then return end
     
     items[name] = (items[name] or 0) + count
@@ -96,7 +96,7 @@ RegisterNetEvent('minimal_inventory:addItem', function(name, count)
 end)
 
 -- Event per rimuovere items
-RegisterNetEvent('minimal_inventory:removeItem', function(name, count)
+RegisterNetEvent('inventory:removeItem', function(name, count)
     if not name or not count then return end
     
     if items[name] then
@@ -165,7 +165,7 @@ end)
 -- Callback NUI per spostare item nella hotbar
 RegisterNUICallback('moveToHotbar', function(data, cb)
     if data.item and data.count and data.slot then
-        TriggerServerEvent('minimal_inventory:moveToHotbar', data.item, data.count, data.slot)
+        TriggerServerEvent('inventory:moveToHotbar', data.item, data.count, data.slot)
         print(('Spostato %s x%d nella hotbar slot %d'):format(data.item, data.count, data.slot))
     end
     cb('ok')
@@ -174,7 +174,7 @@ end)
 -- Callback NUI per raccogliere da terra
 RegisterNUICallback('pickupFromGround', function(data, cb)
     if data.item and data.count then
-        TriggerServerEvent('minimal_inventory:pickupFromGround', data.item, data.count)
+        TriggerServerEvent('inventory:pickupFromGround', data.item, data.count)
         print(('Raccolto da terra: %s x%d'):format(data.item, data.count))
     end
     cb('ok')
@@ -183,7 +183,7 @@ end)
 -- Callback NUI per rimuovere dalla hotbar
 RegisterNUICallback('removeFromHotbar', function(data, cb)
     if data.item and data.count and data.slot then
-        TriggerServerEvent('minimal_inventory:removeFromHotbar', data.item, data.count, data.slot)
+        TriggerServerEvent('inventory:removeFromHotbar', data.item, data.count, data.slot)
         print(('Rimosso dalla hotbar slot %d: %s x%d'):format(data.slot, data.item, data.count))
     end
     cb('ok')
@@ -192,7 +192,7 @@ end)
 -- Callback NUI per riorganizzare hotbar
 RegisterNUICallback('reorganizeHotbar', function(data, cb)
     if data.item and data.count and data.fromSlot and data.toSlot then
-        TriggerServerEvent('minimal_inventory:reorganizeHotbar', data.item, data.count, data.fromSlot, data.toSlot)
+        TriggerServerEvent('inventory:reorganizeHotbar', data.item, data.count, data.fromSlot, data.toSlot)
         print(('Riorganizzato hotbar: %s da slot %d a slot %d'):format(data.item, data.fromSlot, data.toSlot))
     end
     cb('ok')
@@ -213,7 +213,7 @@ end, false)
 RegisterNUICallback('useItem', function(data, cb)
     if data.name then
         -- Trigger server event per usare l'item
-        TriggerServerEvent('minimal_inventory:useItem', data.name)
+        TriggerServerEvent('inventory:useItem', data.name)
     end
     cb('ok')
 end)
@@ -222,13 +222,13 @@ end)
 RegisterNUICallback('dropItem', function(data, cb)
     if data.name and data.count then
         -- Trigger server event per droppare l'item
-        TriggerServerEvent('minimal_inventory:dropItem', data.name, data.count)
+        TriggerServerEvent('inventory:dropItem', data.name, data.count)
     end
     cb('ok')
 end)
 
 -- Gestione oggetti droppati a terra
-RegisterNetEvent('minimal_inventory:spawnDroppedItem', function(id, itemName, count, coords)
+RegisterNetEvent('inventory:spawnDroppedItem', function(id, itemName, count, coords)
     local model = `prop_cs_package_01`
     RequestModel(model)
     while not HasModelLoaded(model) do
@@ -240,7 +240,7 @@ RegisterNetEvent('minimal_inventory:spawnDroppedItem', function(id, itemName, co
     droppedItems[id] = { object = obj, item = itemName, count = count }
 end)
 
-RegisterNetEvent('minimal_inventory:removeDroppedItem', function(id)
+RegisterNetEvent('inventory:removeDroppedItem', function(id)
     local drop = droppedItems[id]
     if drop then
         DeleteObject(drop.object)
@@ -260,7 +260,7 @@ CreateThread(function()
                 AddTextComponentSubstringPlayerName("Premi ~INPUT_CONTEXT~ per raccogliere")
                 EndTextCommandDisplayHelp(0, false, true, -1)
                 if IsControlJustPressed(0, 38) then -- E
-                    TriggerServerEvent('minimal_inventory:pickupDroppedItem', id)
+                    TriggerServerEvent('inventory:pickupDroppedItem', id)
                 end
             end
         end
@@ -269,7 +269,7 @@ CreateThread(function()
 end)
 
 -- Spawna un prop quando un item viene droppato a terra
-RegisterNetEvent('minimal_inventory:spawnDroppedItem', function(itemName, count, coords)
+RegisterNetEvent('inventory:spawnDroppedItem', function(itemName, count, coords)
     local model = GetHashKey('prop_cs_package_01')
     RequestModel(model)
     while not HasModelLoaded(model) do
@@ -284,7 +284,7 @@ end)
 RegisterNUICallback('giveItem', function(data, cb)
     if data.name and data.count and data.targetId then
         -- Trigger server event per dare l'item
-        TriggerServerEvent('minimal_inventory:giveItem', data.name, data.count, data.targetId)
+        TriggerServerEvent('inventory:giveItem', data.name, data.count, data.targetId)
     end
     cb('ok')
 end)

@@ -15,8 +15,9 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 920px;
-  height: 670px;
+  /* Aumenta la larghezza per ospitare entrambe le griglie affiancate (5x5 celle ciascuna più gap) */
+  width: 1200px;
+  height: 680px;
   pointer-events: none;
   background: none;
   /* Assicurati che parta nascosto */
@@ -133,22 +134,11 @@ body {
   background: url('icons/slotvuoto.png') no-repeat center/contain;
 }
 
-.drop-slot.drag-hover {
-  .drop-slot.drag-hover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url('icons/slotevidenziato.png') no-repeat center/contain;
-  pointer-events: none;
-}
-
-.inventory-drop {
-  border: 2.5px dashed #d8b85f;
-  border-radius: 14px;
-  padding: 10px;
-  min-width: 490px;
-  min-height: 490px;
-}
+/*
+ * Le vecchie regole per .drop-slot.drag-hover e .inventory-drop con bordo
+ * tratteggiato sono state rimosse. Lo stile di evidenziazione dei drop slot
+ * e la definizione di inventory-drop sono gestite altrove nel file.
+ */
 
 .hotbar-grid {
   margin-top: 10px;
@@ -175,14 +165,10 @@ body {
   position: relative;
 }
 
-.hotbar-slot.active {
-  .hotbar-slot.active::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url('icons/slotevidenziato.png') no-repeat center/contain;
-  pointer-events: none;
-}
+/*
+ * La vecchia regola nidificata per l'highlight della hotbar è stata rimossa.
+ * L'highlight attivo è definito più sopra tramite .hotbar-slot.active::before.
+ */
 
 .hotbar-slot.dragging-source {
   opacity: 0.5;
@@ -300,8 +286,9 @@ body {
 }
 
 .item-icon {
-  width: 70%;
-  height: 70%;
+  /* smaller icons for the drag preview to free up border space */
+  width: 60%;
+  height: 60%;
   object-fit: contain;
 }
 
@@ -312,6 +299,26 @@ body {
   font-size: 0.9rem;
   color: #fff;
   text-shadow: 0 1px 2px #000;
+}
+
+/* Mostra il nome dell'oggetto quando non c'è un'icona disponibile */
+.item-label {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 0.6rem;
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+/* Ridimensiona le icone nei vari slot per lasciar spazio al bordo */
+.slot-icon {
+  /* icons inside slots are slightly smaller (60% instead of 70%) to create more
+   * spacing around the decorative border */
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
 }
 
 .hotbar-slot.filled::after {

@@ -52,7 +52,9 @@ let mouseStartX = 0;
 let mouseStartY = 0;
 let dragThreshold = 5; // pixel threshold to start dragging
 
-const resourceName = typeof GetParentResourceName === 'function' ? GetParentResourceName() : 'minimal_inventory';
+// Use the correct resource name. If the native GetParentResourceName is not available
+// fall back to 'inventory' instead of 'minimal_inventory'.
+const resourceName = typeof GetParentResourceName === 'function' ? GetParentResourceName() : 'inventory';
 
 // Inizializza l'inventario come chiuso
 document.addEventListener('DOMContentLoaded', function() {
@@ -128,7 +130,8 @@ window.addEventListener('message', function(event) {
             isInventoryOpen = false;
             console.log('Inventario chiuso');
         }
-    } else if (data.action === 'addItem') {
+    } else if (data.action === 'addItem' || data.action === 'setItem') {
+        // Support both 'addItem' (legacy) and 'setItem' actions from the client.
         setItem(data.name, data.count);
     } else if (data.action === 'clear') {
         clearItems();

@@ -43,7 +43,7 @@ RegisterCommand('giveitem', function(source, args)
     savePlayerInventory(source, inventory)
 
     -- Invia al client
-    TriggerClientEvent('minimal_inventory:addItem', source, name, count)
+    TriggerClientEvent('inventory:addItem', source, name, count)
 
     -- Messaggio di conferma
     TriggerClientEvent('chat:addMessage', source, {
@@ -76,7 +76,7 @@ RegisterCommand('giveitemto', function(source, args)
     savePlayerInventory(targetId, targetInventory)
 
     -- Invia al client target
-    TriggerClientEvent('minimal_inventory:addItem', targetId, name, count)
+    TriggerClientEvent('inventory:addItem', targetId, name, count)
 
     -- Messaggi di conferma
     TriggerClientEvent('chat:addMessage', source, {
@@ -93,7 +93,7 @@ RegisterCommand('giveitemto', function(source, args)
 end, false)
 
 -- Event per usare un item
-RegisterNetEvent('minimal_inventory:useItem', function(itemName)
+RegisterNetEvent('inventory:useItem', function(itemName)
     local source = source
     local inventory = getPlayerInventory(source)
     
@@ -108,14 +108,14 @@ RegisterNetEvent('minimal_inventory:useItem', function(itemName)
         savePlayerInventory(source, inventory)
         
         -- Aggiorna il client
-        TriggerClientEvent('minimal_inventory:removeItem', source, itemName, count)
+        TriggerClientEvent('inventory:removeItem', source, itemName, count)
 
         -- Crea un prop nel mondo di gioco alla posizione del giocatore
         local ped = GetPlayerPed(source)
         local coords = GetEntityCoords(ped)
         dropId = dropId + 1
         droppedItems[dropId] = { item = itemName, count = count }
-        TriggerClientEvent('minimal_inventory:spawnDroppedItem', -1, dropId, itemName, count, { x = coords.x, y = coords.y, z = coords.z })
+        TriggerClientEvent('inventory:spawnDroppedItem', -1, dropId, itemName, count, { x = coords.x, y = coords.y, z = coords.z })
 
         TriggerClientEvent('chat:addMessage', source, {
             color = {255, 165, 0},
@@ -132,14 +132,14 @@ RegisterNetEvent('minimal_inventory:useItem', function(itemName)
 end)
 
 -- Event per raccogliere un item dal terreno
-RegisterNetEvent('minimal_inventory:pickupFromGround', function(itemName, count)
+RegisterNetEvent('inventory:pickupFromGround', function(itemName, count)
     local source = source
     local inventory = getPlayerInventory(source)
 
     inventory[itemName] = (inventory[itemName] or 0) + count
     savePlayerInventory(source, inventory)
 
-    TriggerClientEvent('minimal_inventory:addItem', source, itemName, count)
+    TriggerClientEvent('inventory:addItem', source, itemName, count)
     TriggerClientEvent('chat:addMessage', source, {
         color = {0, 255, 0},
         multiline = false,
@@ -148,7 +148,7 @@ RegisterNetEvent('minimal_inventory:pickupFromGround', function(itemName, count)
 end)
 
 -- Pickup tramite prop a terra
-RegisterNetEvent('minimal_inventory:pickupDroppedItem', function(id)
+RegisterNetEvent('inventory:pickupDroppedItem', function(id)
     local source = source
     local drop = droppedItems[id]
     if not drop then return end
@@ -159,8 +159,8 @@ RegisterNetEvent('minimal_inventory:pickupDroppedItem', function(id)
     inventory[drop.item] = (inventory[drop.item] or 0) + drop.count
     savePlayerInventory(source, inventory)
 
-    TriggerClientEvent('minimal_inventory:addItem', source, drop.item, drop.count)
-    TriggerClientEvent('minimal_inventory:removeDroppedItem', -1, id)
+    TriggerClientEvent('inventory:addItem', source, drop.item, drop.count)
+    TriggerClientEvent('inventory:removeDroppedItem', -1, id)
 
     TriggerClientEvent('chat:addMessage', source, {
         color = {0, 255, 0},
@@ -170,7 +170,7 @@ RegisterNetEvent('minimal_inventory:pickupDroppedItem', function(id)
 end)
 
 -- Event per droppare un item
-RegisterNetEvent('minimal_inventory:dropItem', function(itemName, count)
+RegisterNetEvent('inventory:dropItem', function(itemName, count)
     local source = source
     local inventory = getPlayerInventory(source)
     
@@ -185,12 +185,12 @@ RegisterNetEvent('minimal_inventory:dropItem', function(itemName, count)
         savePlayerInventory(source, inventory)
         
         -- Aggiorna il client
-        TriggerClientEvent('minimal_inventory:removeItem', source, itemName, count)
+        TriggerClientEvent('inventory:removeItem', source, itemName, count)
 
         -- Crea un prop nel mondo di gioco alla posizione del giocatore
         local ped = GetPlayerPed(source)
         local coords = GetEntityCoords(ped)
-        TriggerClientEvent('minimal_inventory:spawnDroppedItem', -1, itemName, count, { x = coords.x, y = coords.y, z = coords.z })
+        TriggerClientEvent('inventory:spawnDroppedItem', -1, itemName, count, { x = coords.x, y = coords.y, z = coords.z })
 
         TriggerClientEvent('chat:addMessage', source, {
             color = {255, 165, 0},
@@ -207,14 +207,14 @@ RegisterNetEvent('minimal_inventory:dropItem', function(itemName, count)
 end)
 
 -- Event per raccogliere un item dal terreno
-RegisterNetEvent('minimal_inventory:pickupFromGround', function(itemName, count)
+RegisterNetEvent('inventory:pickupFromGround', function(itemName, count)
     local source = source
     local inventory = getPlayerInventory(source)
 
     inventory[itemName] = (inventory[itemName] or 0) + count
     savePlayerInventory(source, inventory)
 
-    TriggerClientEvent('minimal_inventory:addItem', source, itemName, count)
+    TriggerClientEvent('inventory:addItem', source, itemName, count)
     TriggerClientEvent('chat:addMessage', source, {
         color = {0, 255, 0},
         multiline = false,
@@ -223,7 +223,7 @@ RegisterNetEvent('minimal_inventory:pickupFromGround', function(itemName, count)
 end)
 
 -- Event per dare un item ad un altro giocatore
-RegisterNetEvent('minimal_inventory:giveItem', function(itemName, count, targetId)
+RegisterNetEvent('inventory:giveItem', function(itemName, count, targetId)
     local source = source
     local inventory = getPlayerInventory(source)
     
@@ -244,8 +244,8 @@ RegisterNetEvent('minimal_inventory:giveItem', function(itemName, count, targetI
         savePlayerInventory(targetId, targetInventory)
         
         -- Aggiorna entrambi i client
-        TriggerClientEvent('minimal_inventory:removeItem', source, itemName, count)
-        TriggerClientEvent('minimal_inventory:addItem', targetId, itemName, count)
+        TriggerClientEvent('inventory:removeItem', source, itemName, count)
+        TriggerClientEvent('inventory:addItem', targetId, itemName, count)
         
         -- Messaggi di conferma
         TriggerClientEvent('chat:addMessage', source, {
@@ -273,13 +273,13 @@ function useItem(source, itemName)
     -- Esempi di utilizzo items
     if itemName == "medkit" then
         -- Cura il giocatore
-        TriggerClientEvent('minimal_inventory:healPlayer', source)
+        TriggerClientEvent('inventory:healPlayer', source)
     elseif itemName == "water" then
         -- Disseta il giocatore
-        TriggerClientEvent('minimal_inventory:drinkWater', source)
+        TriggerClientEvent('inventory:drinkWater', source)
     elseif itemName == "food" then
         -- Nutri il giocatore
-        TriggerClientEvent('minimal_inventory:eatFood', source)
+        TriggerClientEvent('inventory:eatFood', source)
     end
     -- Aggiungi altri items qui
 end
